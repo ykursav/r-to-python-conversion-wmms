@@ -66,12 +66,12 @@ def compute_mst(x: pd.DataFrame, verbose=True, scale=False) -> pd.DataFrame:
             from_to_matrix = pd.DataFrame(emst(data_aux)["output"])
             print(from_to_matrix)
 
-        from_ = list(from_to_matrix.iloc[0].astype(int).values)
-        from_.append(1)
-        to_ = list(from_to_matrix.iloc[1].astype(int).values)
-        to_.append(1)
-        distance = list(from_to_matrix.iloc[2].values)
-        distance.append(0)
+        from_ = from_to_matrix.iloc[:, 0].astype(int)
+        from_ = from_.append(pd.Series([1]), ignore_index=True)
+        to_ = from_to_matrix.iloc[:, 1].astype(int)
+        to_ = to_.append(pd.Series([1]), ignore_index=True)
+        distance = from_to_matrix.iloc[:, 2]
+        distance = distance.append(pd.Series([0]), ignore_index=True)
 
     else:
         data_aux = pd.DataFrame(
@@ -84,49 +84,21 @@ def compute_mst(x: pd.DataFrame, verbose=True, scale=False) -> pd.DataFrame:
             from_to_matrix = pd.DataFrame(emst(data_aux)["output"])
             print(from_to_matrix)
 
-        from_ = list(from_to_matrix.iloc[0].astype(int).values)
-        from_.append(1)
-        to_ = list(from_to_matrix.iloc[1].astype(int).values)
-        to_.append(1)
-        distance = list(from_to_matrix.iloc[2].values)
-        distance.append(0)
+        from_ = from_to_matrix.iloc[:, 0].astype(int)
+        from_ = from_.append(pd.Series([1]), ignore_index=True)
+        to_ = from_to_matrix.iloc[:, 1].astype(int)
+        to_ = to_.append(pd.Series([1]), ignore_index=True)
+        distance = from_to_matrix.iloc[:, 2]
+        distance = distance.append(pd.Series([0]), ignore_index=True)
 
-    x = extend_dict_on_df(data_aux, {"from": from_})
-    x = extend_dict_on_df(x, {"to": to_})
-    x = extend_list_as_columns(x, distance)
+    x = pd.concat(
+        [
+            data_aux,
+            pd.DataFrame({"from": from_}),
+            pd.DataFrame({"to": to_}),
+            pd.DataFrame({"distance": distance}),
+        ],
+        axis=1,
+    )
 
     return x
-
-
-def extend_dict_on_df(
-    df: pd.DataFrame,
-    dict_to_extend: Dict[str, List],
-):
-    df_copy = df.copy()
-    counter = 0
-    y_axis = df_copy.shape[0]
-    for key, value in dict_to_extend.items():
-        print(key)
-        print(value)
-        df_copy[key] = 0
-        while counter < y_axis:
-            df_copy.loc[counter, key] = value[counter % len(value)]
-            counter += 1
-
-    return df_copy
-
-
-def extend_list_as_columns(
-    df: pd.DataFrame,
-    list_to_extend: List,
-):
-    df_copy = df.copy()
-    col_counter = 0
-    for elem in list_to_extend:
-        col_name = f"col_{str(col_counter)}"
-        df_copy[col_name] = elem
-        col_counter += 1
-
-    return df_copy
-
-

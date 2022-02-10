@@ -28,99 +28,57 @@ import numpy as np
 #' the `tree` is modified in place, so is not returned.
 
 
-def directed_depth_first(tree, edges:pd.DataFrame, root_id) -> Dict:
-    tree[root_id]["original_parent"] = [0]
+def directed_depth_first(tree, edges: pd.DataFrame, root_id) -> Dict:
+    tree[root_id]["original_parent"] = {"id": "0"}
     stack = []
     stack.append(tree[root_id])
     n = edges.shape[0] + 1
     dfs_order = [""] * n
     parents = [""] * n
     i = 0
-    while (len(stack) > 0):
-        
+    while len(stack) > 0:
+
         node = stack[0]
-        stack[0] = None
+        stack.pop(0)
 
         dfs_order[i] = node["id"]
         parents[i] = node["original_parent"]["id"]
 
-        original_children = node["original_children"]
+        original_children = list(node["original_children"].values())
+        original_children.reverse()
+
+        # original_children_new = original_children.copy()
         for child in original_children:
             child["original_children"].pop(node["id"])
-            original_children[child]["original_parent"] = node
-        
-        stack.append(original_children)
+            child["original_parent"] = node
 
-        i = i + 1
+        stack = original_children + stack
 
-    parents_dict = {}
-    for i in range(0, len(parents)):
-        parents_dict[i] = parents[i]
+        i += 1
 
-    parents_series = pd.Series(parents_dict)
+    # parents_dict = {}
+    # for i in range(0, len(parents)):
+    #     parents_dict[i] = parents[i]
+
+    parents_series = pd.Series(
+        data=[float(elem) for elem in parents],
+        index=[float(elem) for elem in dfs_order],
+    )
 
     orig_from = edges["from"]
-    exchange_which = np.where(edges["from"] != parents_series[str(edges["to"])])  
-    edges["from"][exchange_which] = edges["to"][exchange_which]
-    edges["to"][exchange_which] = orig_from[exchange_which]
+    exchange_which = np.where(
+        edges["from"].values != parents_series.reindex(edges["to"].values)
+    )[0]
+    for exchange in exchange_which:
+        edges["from"][exchange] = edges["to"][exchange]
+        edges["to"][exchange] = orig_from[exchange]
 
     edges_to = edges["to"].astype(str)
     a = edges["a"]
     b = edges["b"]
-    for j in range(0, len(n - 1)):
+    for j in range(0, (n - 1)):
         node = tree[edges_to[j]]
         node["original_a"] = a[j]
         node["original_b"] = b[j]
 
     return {"edges": edges, "dfs_order": dfs_order}
-
-directed_depth_first <- function(tree, edges, root_id) {
-  # Prepare to walk the tree from the root downwards
-  tree[[root_id]]$original_parent <- list(id = "0") # Dummy
-  stack <- list()
-  stack[[1]] <- tree[[root_id]] # Begin by putting the root node into the stack
-  n <- nrow(edges) + 1L
-  dfs_order <- character(n) # Node IDs in depth-first preorder
-  parents <- character(n) # A lookup vector of parents of nodes
-  i <- 0L
-  # Walk the tree
-  while (length(stack) > 0L) {
-    i <- i + 1L
-    # Pop a node from the stack
-    node <- stack[[1]]
-    stack[[1]] <- NULL
-    # Add the node to the depth-first search order
-    dfs_order[i] <- node$id
-    # Add the parent of the node to the lookup vector of parents of nodes
-    parents[i] <- node$original_parent$id
-    # Remove the node from the 'children' of any children, and assign itself as
-    # their parent instead.
-    original_children <- as.list(node$original_children, sort = FALSE)
-    for (child in original_children) {
-      .Internal(remove(node$id, child$original_children, FALSE))
-      child$original_parent <- node
-    }
-    # Append any children to the stack
-    stack <- c(original_children, stack)
-  }
-  # Make a lookup vector of parents of nodes. The value is the id of the parent,
-  # and the name is the id of the child.
-  parents <- setNames(as.numeric(parents), dfs_order)
-  # We can use this to exchange the from/to columns of `edges` to align with the
-  # depth-first search.
-  orig_from <- edges$from
-  exchange_which <- which(edges$from != parents[as.character(edges$to)])
-  edges$from[exchange_which] <- edges$to[exchange_which]
-  edges$to[exchange_which] <- orig_from[exchange_which]
-  # Now that `edges` is directed, assign the edge values to the destination
-  # nodes.
-  edges_to <- as.character(edges$to)
-  a <- edges$a
-  b <- edges$b
-  for (j in seq_len(n - 1L)) {
-    node <- tree[[edges_to[j]]]
-    node$original_a <- a[j]
-    node$original_b <- b[j]
-  }
-  list(edges = edges, dfs_order = dfs_order)
-}

@@ -44,7 +44,7 @@ def tree_from_edges(edges: pd.DataFrame):
     from2 = from_.copy()
     from2.extend(to)
     ids = list(dict.fromkeys(from2))
-    tree = OrderedDict()
+    tree = {}
     for i in range(0, len(ids)):
         node = {}
         node["id"] = ids[i]
@@ -58,8 +58,8 @@ def tree_from_edges(edges: pd.DataFrame):
         parent = tree[from_id]
         child = tree[to_id]
         # parent
-        tree[from_id]["original_children"][to_id] = child
+        parent["original_children"][to_id] = child
         # child
-        tree[to_id]["original_children"][from_id] = parent
+        child["original_children"][from_id] = parent
 
     return tree
