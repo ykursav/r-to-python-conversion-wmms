@@ -74,8 +74,8 @@ def directed_depth_first(tree, edges: pd.DataFrame, root_id) -> Dict:
         edges["to"][exchange] = orig_from[exchange]
 
     edges_to = edges["to"].astype(str)
-    a = edges["a"]
-    b = edges["b"]
+    a = edges["a"].astype(float)
+    b = edges["b"].astype(float)
     for j in range(0, (n - 1)):
         node = tree[edges_to[j]]
         node["original_a"] = a[j]

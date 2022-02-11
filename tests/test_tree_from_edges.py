@@ -2,6 +2,7 @@ from src.tree_from_edges import tree_from_edges
 import pandas as pd
 from src.directed_depth_first import directed_depth_first
 from src.set_subtrees import set_subtrees
+from src.wmms import weighted_maximum_mean_subtrees
 
 from_ = list(range(2, 8)) * 5
 to = list(range(2, 33))
@@ -45,4 +46,15 @@ def test_sub_trees():
     parents = [""] * n
     i = 0
     x = directed_depth_first(tree, df, "1")
-    set_subtrees(tree, x["dfs_order"])
+    tree = set_subtrees(tree, x["dfs_order"])
+    print("Done")
+
+
+def test_wmms():
+    root_id = "1"
+    df = pd.DataFrame(data)
+    df["a"] = -df["a"]
+    new_edges = weighted_maximum_mean_subtrees(df, root_id)
+    new_edges["a"] = -new_edges["a"]
+    new_edges["value"] = -new_edges["value"]
+    print("Done")

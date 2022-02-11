@@ -66,9 +66,9 @@ def compute_mst(x: pd.DataFrame, verbose=True, scale=False) -> pd.DataFrame:
             from_to_matrix = pd.DataFrame(emst(data_aux)["output"])
             print(from_to_matrix)
 
-        from_ = from_to_matrix.iloc[:, 0].astype(int)
+        from_ = from_to_matrix.iloc[:, 0].astype(int) + 1
         from_ = from_.append(pd.Series([1]), ignore_index=True)
-        to_ = from_to_matrix.iloc[:, 1].astype(int)
+        to_ = from_to_matrix.iloc[:, 1].astype(int) + 1
         to_ = to_.append(pd.Series([1]), ignore_index=True)
         distance = from_to_matrix.iloc[:, 2]
         distance = distance.append(pd.Series([0]), ignore_index=True)
@@ -84,9 +84,9 @@ def compute_mst(x: pd.DataFrame, verbose=True, scale=False) -> pd.DataFrame:
             from_to_matrix = pd.DataFrame(emst(data_aux)["output"])
             print(from_to_matrix)
 
-        from_ = from_to_matrix.iloc[:, 0].astype(int)
+        from_ = from_to_matrix.iloc[:, 0].astype(int) + 1
         from_ = from_.append(pd.Series([1]), ignore_index=True)
-        to_ = from_to_matrix.iloc[:, 1].astype(int)
+        to_ = from_to_matrix.iloc[:, 1].astype(int) + 1
         to_ = to_.append(pd.Series([1]), ignore_index=True)
         distance = from_to_matrix.iloc[:, 2]
         distance = distance.append(pd.Series([0]), ignore_index=True)
